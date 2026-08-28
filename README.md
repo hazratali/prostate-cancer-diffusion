@@ -15,6 +15,7 @@ The repository includes the complete inference and training pipeline, a trained 
 * [Usage](#usage)
 * [Project Structure](#project-structure)
 * [Notes](#notes)
+* [Dataset](#dataset)
 * [License](#license)
 
 ## Getting Started
@@ -134,6 +135,9 @@ Update the dataset paths in the script before execution.
 * `train_weak_cond.py` and `sample_mask2img_25D.py` form the main **2.5D weakly mask-conditioned diffusion pipeline**.
 * The supplied `best.pt` checkpoint is intended to be used with the code in this repository.
 * GPU acceleration is strongly recommended for model training and sampling.
+
+## Dataset
+The datasets used can be found here: https://github.com/jamtheim/LUND-PROBE and https://huggingface.co/datasets/Novel-BioMedAI/Medical_Segmentation_Decathlon
 
 ## License
 
