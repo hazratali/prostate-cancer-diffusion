@@ -1,42 +1,105 @@
 # Prostate Cancer Diffusion
 
-A repository exploring diffusion models for prostate cancer image synthesis and analysis.
+A research repository for **2.5D weakly mask-conditioned diffusion-based synthesis of prostate MRI**, including training, synthetic image generation, sample filtering, and histogram matching for downstream analysis.
 
 ## Overview
 
-This project focuses on applying diffusion models to generate and analyze medical images related to prostate cancer detection and diagnosis.
+This project implements a **2.5D weakly mask-conditioned Denoising Diffusion Probabilistic Model (DDPM)** for generating synthetic prostate MRI images from prostate segmentation masks.
+
+The repository includes the complete inference and training pipeline, a trained model checkpoint, and utilities for post-processing generated images. The generated synthetic images are intended for research and downstream medical image segmentation experiments.
 
 ## Table of Contents
 
-- [Getting Started](#getting-started)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
--- [License](#license)
+* [Getting Started](#getting-started)
+* [Installation](#installation)
+* [Usage](#usage)
+* [Project Structure](#project-structure)
+* [Notes](#notes)
+* [License](#license)
 
 ## Getting Started
 
 ### Requirements
-Python 3.8+
-GPU strongly recommended (training uses mixed precision / TF32)
-torch, numpy, nibabel, scikit-image, tqdm
 
-bash
+The project is designed to run with:
+
+* Python 3.8+
+* CUDA-enabled GPU (strongly recommended for training)
+* PyTorch
+* NumPy
+* NiBabel
+* scikit-image
+* tqdm
+
+Training uses **mixed precision and TF32** where supported by the hardware.
+
+### Installation
+
+The recommended environment is the provided Docker image.
+
+```bash
+docker build -t prostate-diffusion .
+docker run --gpus all -it prostate-diffusion
+```
+
+For a local Python environment, install the required packages with:
+
+```bash
 pip install torch numpy nibabel scikit-image tqdm
+```
+
+> For reproducible experiments, the provided `Dockerfile` should be preferred over a manually configured Python environment.
 
 ## Usage
-bash
 
-# 1. Weakly mask-conditioned 2.5D training
-python train_weak_cond.py --images /path/imagesTr --labels /path/labelsTr --out ./ckpts
+### 1. Train the 2.5D weakly mask-conditioned DDPM
 
-# 2. Sample synthetic volumes from a trained 2.5D checkpoint
-python sample_mask2img_25D.py --labels /path/labelsTr --ckpt ./ckpts/best.pt --out ./synthetic
+```bash
+python train_weak_cond.py \
+    --images /path/imagesTr \
+    --labels /path/labelsTr \
+    --out ./ckpts
+```
 
-Note:
-export_2Dslices.py have hardcoded dataset paths (ROOT, DS, SAVE) — update these before running rather than relying on CLI args.
-train_weak_cond.py + sample_mask2img_25D.py are the 2.5D weakly-conditioned pipeline.
-sample_mask2img_25D.py infers model architecture from the checkpoint's state dict, so it should load checkpoints from any of the three UNet25D* variants without needing to know which was used at train time.
+The training script includes:
+
+* Exponential Moving Average (EMA)
+* Model evaluation
+* Early stopping
+* Mixed-precision training
+
+### 2. Generate synthetic prostate MRI
+
+Use a trained checkpoint to generate synthetic images from prostate segmentation masks:
+
+```bash
+python sample_mask2img_25D.py \
+    --labels /path/labelsTr \
+    --ckpt ./best.pt \
+    --out ./synthetic
+```
+
+The sampling script infers the model architecture from the checkpoint state dictionary and supports the available `UNet25D*` model variants without requiring the architecture to be specified separately at inference time.
+
+### 3. Filter generated samples
+
+Synthetic images can be evaluated using the composite filtering procedure:
+
+```bash
+python filter_best_samples.py
+```
+
+Update the input/output paths in the script as required by your dataset organisation.
+
+### 4. Histogram matching for MSD
+
+Histogram matching can be applied to align synthetic image intensities with the target MSD prostate MRI distribution:
+
+```bash
+python histogram_matching_msd.py
+```
+
+Update the dataset paths in the script before execution.
 
 ## Project Structure
 
@@ -54,22 +117,24 @@ sample_mask2img_25D.py infers model architecture from the checkpoint's state dic
 
 ### File Descriptions
 
-| File                        | Description                                                                                                                     |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `README.md`                 | Project documentation, setup instructions, usage, and reproducibility information.                                              |
-| `Dockerfile`                | Defines the Docker environment and dependencies required to run the project.                                                    |
-| `best.pt`                   | Best-performing trained DDPM checkpoint used for synthetic MRI generation.                                                      |
-| `train_weak_cond.py`        | Trains the **2.5D weakly mask-conditioned DDPM**, including EMA, evaluation, and early stopping.                                |
-| `sample_mask2img_25D.py`    | Generates synthetic prostate MRI images from prostate segmentation masks using the trained 2.5D DDPM.                           |
-| `filter_best_samples.py`    | Applies the **composite quality filter** to identify suitable synthetic MRI samples.                                            |
-| `histogram_matching_msd.py` | Performs histogram matching to align synthetic/generated images with the intensity distribution of the MSD prostate MRI cohort. |
+| File                        | Description                                                                                           |
+| --------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `README.md`                 | Project documentation, setup instructions, usage, and reproducibility information.                    |
+| `Dockerfile`                | Defines the containerised environment and dependencies required to run the project.                   |
+| `best.pt`                   | Trained DDPM checkpoint used for synthetic prostate MRI generation.                                   |
+| `train_weak_cond.py`        | Trains the **2.5D weakly mask-conditioned DDPM**, including EMA, evaluation, and early stopping.      |
+| `sample_mask2img_25D.py`    | Generates synthetic prostate MRI images from segmentation masks using a trained 2.5D DDPM checkpoint. |
+| `filter_best_samples.py`    | Applies the composite image-quality filtering procedure to generated samples.                         |
+| `histogram_matching_msd.py` | Performs histogram matching to align generated image intensities with the MSD prostate MRI cohort.    |
 
-```
-```
+## Notes
 
+* The repository does **not** contain the original medical imaging datasets. The required datasets must be obtained separately and prepared according to the expected directory structure.
+* The paths used by the post-processing scripts may need to be updated before execution.
+* `train_weak_cond.py` and `sample_mask2img_25D.py` form the main **2.5D weakly mask-conditioned diffusion pipeline**.
+* The supplied `best.pt` checkpoint is intended to be used with the code in this repository.
+* GPU acceleration is strongly recommended for model training and sampling.
 
+## License
 
-# Sampling from a trained 2.5D checkpoint
-License
-
-MIT
+This project is released under the **MIT License**.
