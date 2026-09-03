@@ -142,3 +142,6 @@ The datasets used can be found here: https://github.com/jamtheim/LUND-PROBE and 
 ## License
 
 This project is released under the **MIT License**.
+
+## How to cite
+> Chibike Ubgam, Hazrat Ali, Weakly Conditioned Diffusion Model Augmentation for Prostate Segmentation, September 2026. Preprint link to be added here
