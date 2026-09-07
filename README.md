@@ -74,7 +74,7 @@ The training script includes:
 Use a trained checkpoint to generate synthetic images from prostate segmentation masks:
 
 ```bash
-python sample_mask2img_25D.py \
+python generate_3d_weak_cond.py \
     --labels /path/labelsTr \
     --ckpt ./best.pt \
     --out ./synthetic
@@ -111,7 +111,7 @@ Update the dataset paths in the script before execution.
 ├── best.pt
 │
 ├── train_weak_cond.py
-├── sample_mask2img_25D.py
+├── generate_3d_weak_cond.py
 ├── filter_best_samples.py
 └── histogram_matching_msd.py
 ```
@@ -124,7 +124,7 @@ Update the dataset paths in the script before execution.
 | `Dockerfile`                | Defines the containerised environment and dependencies required to run the project.                   |
 | `best.pt`                   | Trained DDPM checkpoint used for synthetic prostate MRI generation.                                   |
 | `train_weak_cond.py`        | Trains the **2.5D weakly mask-conditioned DDPM**, including EMA, evaluation, and early stopping.      |
-| `sample_mask2img_25D.py`    | Generates synthetic prostate MRI images from segmentation masks using a trained 2.5D DDPM checkpoint. |
+| `generate_3d_weak_cond.py`  | Generates synthetic prostate MRI images from segmentation masks using a trained 2.5D DDPM checkpoint. |
 | `filter_best_samples.py`    | Applies the composite image-quality filtering procedure to generated samples.                         |
 | `histogram_matching_msd.py` | Performs histogram matching to align generated image intensities with the MSD prostate MRI cohort.    |
 
